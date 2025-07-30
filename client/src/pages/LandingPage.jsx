@@ -3,69 +3,46 @@ import { toast } from 'react-toastify';
 import { backendUrl } from '../App';
 import axios from 'axios';
 import { storeContext } from '../context/storeContext';
-import logo from '../assets/logo.png'
+import logo from '../assets/logo.png';
+import { v4 as uuidv4 } from 'uuid';
+
 
 function LandingPage() {
 
-  const { navigate } = useContext(storeContext);
-
-
-  const [roomCode, setRoomCode] = useState('');
-  const [username, setUsername] = useState('');
-  const [projectName, setProjectName] = useState('');
+  const { navigate,roomCode,setRoomCode,setUsername,username } = useContext(storeContext);
 
 
   const handleNewRoom = () => {
-    setRoomCode("fswfwfnewfewj32r2rnu2o");
+    const newRoomId = uuidv4();
+    setRoomCode(newRoomId);
+    toast.success("created a new room ");
   }
-
+ 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (newRoom) {
-      // Logic to create a new room with projectName and username
-      if (!projectName || !username) {
-        toast.error("Please fill in all fields");
-        return;
-      }
-      try {
-
-        const response = axios.post(backendUrl + '/create-room', { projectName, username }, {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        })
-
-        if (response.data.success) {
-          toast.success("Room created successfully");
-          navigate(`/room/${response.data.roomCode}`)
-        }
-
-      } catch (error) {
-        toast.error(error.response.data.message);
-        console.error("Error creating room:", error);
-      }
-    } else {
-      if (!roomCode || !username) {
-        toast.error("Please fill in all fields");
-        return;
-      }
-      try {
-        const response = axios.post(backendUrl + '/join-room', { roomCode, username }, {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        })
-
-        if (response.data.success) {
-          toast.success("Joined room successfully");
-          navigate(`/room/${response.data.roomCode}`);
-        }
-      }
-      catch (error) {
-        toast.error(error.response.data.message);
-        console.error("Error joining room:", error);
-      }
+    if (!roomCode || !username) {
+      toast.error("Please fill in all fields");
+      return;
     }
+    // try {
+    //   const response = axios.post(backendUrl + '/join-room', { roomCode, username }, {
+    //     headers: {
+    //       'Content-Type': 'application/json'
+    //     }
+    //   })
+
+    //   if (response.data.success) {
+    //     toast.success("Joined room successfully");
+    //     navigate(`/room/${response.data.roomCode}`);
+    //   }
+    // }
+    // catch (error) {
+    //   toast.error(error.response.data.message);
+    //   console.error("Error joining room:", error);
+    // }
+
+    navigate(`/editor/${roomCode}`);
+
     // Reset form fields after submission
     setRoomCode('');
     setUsername('');
@@ -78,7 +55,7 @@ function LandingPage() {
           <img src={logo} alt="" className='rounded-full w-24' />
           <div className="capitalize font-poppins flex flex-col gap-1">
             <h1 className='text-3xl font-bold'>codeboard</h1>
-            <h2 className='text-green-700 font-bold'>realtime code collabration</h2>
+            <h2 className='text-green-700 font-bold'>realtime code collaboration</h2>
           </div>
         </div>
         <h1 className='p-4 text-4xl capitalize font-poppins'>join room</h1>
