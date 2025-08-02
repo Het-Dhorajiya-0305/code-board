@@ -1,17 +1,15 @@
 import React, { useRef, useEffect, useContext, useState } from 'react';
-import Editor from '@monaco-editor/react';
 import io from 'socket.io-client';
 import logo from '../assets/logo.png'
 import Avatar from 'react-avatar';
 import { storeContext } from '../context/storeContext';
+import CodeEditor from '../component/codeEditor';
 
 
 
 function EditorPage() {
   const editorRef = useRef(null);
-  const { roomCode, username, setRoomCode, setUsername, navigate } = useContext(storeContext);
-
-  const [langauge,setlangauge]=useState('javascript');
+  const { roomCode, username, setRoomCode, setUsername, navigate ,language} = useContext(storeContext);
 
 
   const handleCopyRoomId = () => {
@@ -52,26 +50,7 @@ function EditorPage() {
         </div>
       </div>
       <div className="w-5/6 h-full max-xl:w-4/5 max-lg:w-3/4">
-        <div className="bg-neutral-800 py-1">
-          <select name="" id="" className='px-2 py-1 text-white bg-neutral-800 w-30' onChange={(e)=>setlangauge(e.target.value)}>
-            <option value="javascript" selected>js</option>
-            <option value="C++">c++</option>
-            <option value="java">java</option>
-            <option value="python">python</option>
-          </select>
-        </div>
-        <Editor
-          height="100%"
-          theme="vs-dark"
-          defaultLanguage={langauge}
-          defaultValue='"Code Here!"'
-          options={{
-            fontSize: 14,
-            minimap: { enabled: false },
-            scrollBeyondLastLine: false,
-            automaticLayout: true,
-          }}
-        />
+        <CodeEditor language={language}></CodeEditor>
       </div>
     </div>
   );
