@@ -6,8 +6,21 @@
 }
 
 
-#root{
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+#root {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.output-box::-webkit-scrollbar {
+  width: 6px;
+}
+
+.output-box::-webkit-scrollbar-thumb {
+  background-color: rgba(107, 114, 128, 0.7);
+  border-radius: 4px;
+}
+
+.output-box::-webkit-scrollbar-track {
+  background-color: transparent;
 }
