@@ -45,7 +45,7 @@ function Output({ editorRef, language }) {
     }
     return (
         <div className='w-full flex flex-col gap-2'>
-            <button className='relative border-[1px] h-[41px] capitalize p-2 max-w-30 rounded-lg text-gray-400 hover:bg-gray-400 hover:text-black hover:cursor-pointer font-bold transition-all duration-200 ' onClick={runCode} isLoading={loading}>{loading ? <Loader></Loader> : 'run code'}</button>
+            <button className='relative border-[1px] h-[41px] capitalize p-2 max-w-30 rounded-lg text-gray-400 hover:bg-gray-400 hover:text-black hover:cursor-pointer font-bold transition-all duration-200 ' onClick={runCode} >{loading ? <Loader></Loader> : 'run code'}</button>
             <div className={`output-box border-[1px] overflow-y-scroll scroll-smooth scroll-1  rounded-lg h-155 p-3  ${isError ? 'text-red-700 border-red-700' : 'text-gray-400 border-gray-400'}`}>{output ? output.map((line,index)=>(
                 <div className="" key={index}>{line}</div>
             )) : 'Click "Run Code" to see the output here'}</div>
