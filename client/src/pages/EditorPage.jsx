@@ -7,16 +7,39 @@ import { toast } from 'react-toastify';
 import { useParams } from 'react-router-dom';
 import logo from '../assets/logo.png';
 
+const frontendUrl = import.meta.env.VITE_FRONTEND_URL || 'http://localhost:5173';
+
 function EditorPage() {
   const socketRef = useRef(null);
   const { roomId } = useParams();
-  const { email, username, language, navigate, clearUserData } = useContext(storeContext);
+  const { username, navigate, setRoomCodeState, setUsernameState } = useContext(storeContext);
   const [users, setUsers] = useState([]);
+  const [typeUser, setTypeUser] = useState('');
 
   useEffect(() => {
+    let socket;
+
+    const handleBeforeUnload = () => {
+      if (socket) {
+        socket.emit('leave-room', { roomId, username });
+        socket.disconnect();
+      }
+    };
+
+    const handlePopState = () => {
+      if (socket) {
+        socket.emit('leave-room', { roomId, username });
+        socket.disconnect();
+      }
+      setRoomCodeState('');
+      setUsernameState('');
+      localStorage.removeItem('roomCode');
+      localStorage.removeItem('username');
+    };
+
     const init = async () => {
-      socketRef.current = await initSocket();
-      const socket = socketRef.current;
+      socket = await initSocket();
+      socketRef.current = socket;
 
       socket.on('connect_error', handleErrors);
       socket.on('connect_failed', handleErrors);
@@ -41,38 +64,37 @@ function EditorPage() {
         toast.info(`${username} left the room`);
       });
 
-      const handleBeforeUnload = () => {
-        socket.emit('leave-room', { roomId, username });
-        socket.disconnect();
-      };
+      socket.on('user-typing', ({ username }) => {
+        setTypeUser(username);
+        setTimeout(() => {
+          setTypeUser('');
+        }, 1000);
+      })
+
+
+
+      window.history.pushState(null, '', window.location.href);
+
 
       window.addEventListener('beforeunload', handleBeforeUnload);
-
-      // Handle browser back navigation
-      const handlePopState = () => {
-        socket.emit('leave-room', { roomId, username });
-        socket.disconnect();
-        navigate('/');
-      };
-
       window.addEventListener('popstate', handlePopState);
-
-      // Cleanup on unmount
-      return () => {
-        socket.emit('leave-room', { roomId, username });
-        socket.disconnect();
-        window.removeEventListener('beforeunload', handleBeforeUnload);
-        window.removeEventListener('popstate', handlePopState);
-        socketRef.current = null;
-      };
     };
 
     if (roomId && username) {
       init();
     } else {
-      // If user refreshed without username, try to redirect them to landing
       navigate('/');
     }
+
+    return () => {
+      if (socket) {
+        socket.emit('leave-room', { roomId, username });
+        socket.disconnect();
+      }
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('popstate', handlePopState);
+      socketRef.current = null;
+    };
   }, [roomId, username, navigate]);
 
   const handleCopyRoomId = () => {
@@ -81,9 +103,12 @@ function EditorPage() {
   };
 
   const leaveRoom = () => {
-    clearUserData();
     socketRef.current?.emit('leave-room', { roomId, username });
     socketRef.current?.disconnect();
+    setRoomCodeState('');
+    setUsernameState('');
+    localStorage.removeItem('roomCode');
+    localStorage.removeItem('username');
     navigate('/');
   };
 
@@ -100,8 +125,8 @@ function EditorPage() {
         <div className="w-full h-6/7 flex flex-col gap-4 justify-between">
           <div className="flex gap-4 items-center flex-wrap p-4">
             {users.map((user) => (
-              <div key={user.userId} className="flex flex-col items-center capitalize gap-1">
-                <Avatar name={user.username} size="50" className="rounded-full" />
+              <div key={user.userId} className={`flex flex-col items-center capitalize gap-1`}>
+                <Avatar name={user.username} size="50" className={`rounded-full ${typeUser === user.username ? 'ring-3 ring-green-700' : ''}`} />
                 {user.username}
               </div>
             ))}
@@ -109,13 +134,13 @@ function EditorPage() {
           <div className="flex flex-col items-center gap-2">
             <button
               onClick={handleCopyRoomId}
-              className="bg-white px-4 py-2 text-black rounded-2xl font-bold hover:bg-gray-500 transition-all duration-300"
+              className="bg-white px-4 py-2 text-black rounded-2xl font-bold hover:bg-gray-500 hover:cursor-pointer transition-all duration-300"
             >
               Copy Room Code
             </button>
             <button
               onClick={leaveRoom}
-              className="bg-green-500 px-4 py-2 text-black rounded-2xl font-bold hover:bg-green-600 transition-all duration-300"
+              className="bg-green-500 px-4 py-2 text-black rounded-2xl font-bold hover:bg-green-600 hover:cursor-pointer transition-all duration-300"
             >
               Leave Room
             </button>
@@ -123,7 +148,11 @@ function EditorPage() {
         </div>
       </div>
       <div className="w-5/6 h-full max-xl:w-4/5 max-lg:w-3/4">
-        <CodeEditor language={language} />
+        <CodeEditor
+          socketRef={socketRef}
+          roomId={roomId}
+          username={username}
+        />
       </div>
     </div>
   );

@@ -6,7 +6,6 @@ import User from './model/userModel.js';
 import RoomModel from './model/roomModel.js';
 import dotenv from 'dotenv';
 import connectDB from './bd/db.js';
-import { getusers } from './controller/usercontroller.js';
 
 dotenv.config({ path: './.env' });
 connectDB();
@@ -16,7 +15,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: 'http://localhost:5173',
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
     methods: ['GET', 'POST']
   }
 });
@@ -50,6 +49,11 @@ io.on('connection', (socket) => {
 
       socket.join(roomId);
 
+
+      if (room && room.code) {
+        socket.emit('sync-code', { code: room.code,language: room.language });
+      }
+
       const currentRoomUsers = await User.find({ currentRoom: roomId });
 
       // Notify everyone in the room
@@ -70,6 +74,29 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('code-change', async ({ roomId, code }) => {
+
+    // ✅ Update in MongoDB
+    try {
+      const room = await RoomModel.findById(roomId);
+      if (room) {
+        room.code = code;
+        await room.save();
+      }
+      socket.to(roomId).emit('code-changed', { code: room.code });
+    } catch (err) {
+      console.error('Failed to update code in DB:', err);
+    }
+  })
+
+  socket.on('typing', ({ roomId, username }) => {
+    socket.to(roomId).emit('user-typing', { username });
+  });
+
+  socket.on('language-change', async ({ roomId, language }) => {
+    io.to(roomId).emit('language-changed', { language });
+    const updateRoom=await RoomModel.findByIdAndUpdate(roomId, { language: language }, { new: true });
+  });
   socket.on('disconnect', async () => {
     try {
       const user = await User.findOne({ socket_id: socket.id });
@@ -98,6 +125,13 @@ io.on('connection', (socket) => {
         });
 
         console.log(`🔴 User ${user.userName} disconnected from room ${roomId}`);
+        socket.leave(roomId);
+        const updatedRoom = await RoomModel.findById(roomId);
+        if (updatedRoom && updatedRoom.users.length === 0) {
+          await RoomModel.deleteOne({ _id: roomId });
+          console.log(`🗑️ Room ${roomId} deleted because it's empty`);
+        }
+
       } else {
         console.log(`🔴 Unknown user disconnected: ${socket.id}`);
       }
@@ -111,8 +145,6 @@ io.on('connection', (socket) => {
 app.get('/', (req, res) => {
   res.send('Code Collaboration Backend Running 🚀');
 });
-
-app.post('/getusers', getusers);
 
 server.listen(process.env.PORT || 3000, () => {
   console.log("🌐 Server is running on port", process.env.PORT);

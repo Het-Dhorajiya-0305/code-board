@@ -35,7 +35,6 @@ const StoreContextProvider = (props) => {
 
     const [roomCode, setRoomCodeState] = useState(() => localStorage.getItem('roomCode') || '');
     const [username, setUsernameState] = useState(() => localStorage.getItem('username') || '');
-    const [email, setEmailState] = useState(() => localStorage.getItem('email') || '');
 
     const setRoomCode = (value) => {
         setRoomCodeState(value);
@@ -47,18 +46,11 @@ const StoreContextProvider = (props) => {
         localStorage.setItem('username', value);
     };
 
-    const setEmail = (value) => {
-        setEmailState(value);
-        localStorage.setItem('email', value);
-    };
-
     const clearUserData = () => {
         setRoomCodeState('');
         setUsernameState('');
-        setEmailState('');
         localStorage.removeItem('roomCode');
         localStorage.removeItem('username');
-        localStorage.removeItem('email');
     };
 
     const contextValue = {
@@ -70,9 +62,9 @@ const StoreContextProvider = (props) => {
         LANGUAGE_VERSIONS,
         CODE_SNIPPETS,
         ACTIONS,
-        setEmail,
-        email,
-        clearUserData
+        clearUserData,
+        setRoomCodeState,
+        setUsernameState
     };
 
     return (

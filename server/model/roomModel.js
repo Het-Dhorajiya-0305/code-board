@@ -10,7 +10,15 @@ const roomSchema = new mongoose.Schema({
       type: String,
       required: true
     }
-  ]
+  ],
+  code:{
+    type: String,
+    default: ''
+  },
+  language:{
+    type: String,
+    default: 'javascript'
+  }
 }, { _id: false });
 
 const RoomModel = mongoose.model('Room', roomSchema);
