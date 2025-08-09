@@ -19,7 +19,6 @@ function App() {
         <Route path='/editor/:roomId' element={<EditorPage></EditorPage>}></Route>
 
       </Routes>
-      {/* <LandingPage></LandingPage> */}
     </div>
   )
 }

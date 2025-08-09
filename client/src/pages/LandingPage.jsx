@@ -6,22 +6,19 @@ import { v4 as uuidv4 } from 'uuid';
 
 function LandingPage() {
   const {
-    email, setEmail,
-    navigate, roomCode, setRoomCode,
-    username, setUsername
-  } = useContext(storeContext);
+    option,navigate, roomCode, setRoomCode,username, setUsername} = useContext(storeContext);
 
   const handleNewRoom = () => {
     const newRoomId = uuidv4();
     setRoomCode(newRoomId);
-    toast.success("✅ New room created!");
+    toast.success("✅ New room created!",option);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
     if (!roomCode.trim() || !username.trim()) {
-      toast.error("❌ Please fill in all fields.");
+      toast.error("❌ Please fill in all fields.",option);
       return;
     }
 

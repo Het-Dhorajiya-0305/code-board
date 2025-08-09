@@ -7,12 +7,10 @@ import { toast } from 'react-toastify';
 import { useParams } from 'react-router-dom';
 import logo from '../assets/logo.png';
 
-const frontendUrl = import.meta.env.VITE_FRONTEND_URL || 'http://localhost:5173';
-
 function EditorPage() {
   const socketRef = useRef(null);
   const { roomId } = useParams();
-  const { username, navigate, setRoomCodeState, setUsernameState } = useContext(storeContext);
+  const { option,isRemoteUpdate,setValue, setlanguage, username, navigate, setRoomCodeState, setUsernameState } = useContext(storeContext);
   const [users, setUsers] = useState([]);
   const [typeUser, setTypeUser] = useState('');
 
@@ -46,7 +44,7 @@ function EditorPage() {
 
       function handleErrors(err) {
         console.error('Socket error:', err);
-        toast.error('Socket connection failed. Try again later.');
+        toast.error('Socket connection failed. Try again later.',option);
         navigate('/');
       }
 
@@ -57,11 +55,11 @@ function EditorPage() {
       });
 
       socket.on('user-joined', ({ username }) => {
-        toast.success(`${username} joined the room`);
+        toast.success(`${username} joined the room`,option);
       });
 
       socket.on('user-left', ({ username }) => {
-        toast.info(`${username} left the room`);
+        toast.info(`${username} left the room`,option);
       });
 
       socket.on('user-typing', ({ username }) => {
@@ -71,6 +69,14 @@ function EditorPage() {
         }, 1000);
       })
 
+      socket.on('sync-code', ({ code, language }) => {
+        isRemoteUpdate.current = true;
+        setValue(code);
+        setlanguage(language);
+        setTimeout(() => {
+          isRemoteUpdate.current = false;
+        }, 0);
+      });
 
 
       window.history.pushState(null, '', window.location.href);
@@ -99,7 +105,7 @@ function EditorPage() {
 
   const handleCopyRoomId = () => {
     navigator.clipboard.writeText(roomId);
-    toast.success('Room ID copied!');
+    toast.success('Room ID copied!',option);
   };
 
   const leaveRoom = () => {

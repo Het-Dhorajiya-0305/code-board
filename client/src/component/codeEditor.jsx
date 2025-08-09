@@ -1,23 +1,20 @@
-import React, { useContext, useRef, useState, useEffect } from 'react';
+import React, { useContext, useRef, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
 import LanguageSelector from './languageSelector';
 import { storeContext } from '../context/storeContext';
 import Output from './Output';
 
-// ...existing imports...
 
 function CodeEditor({ socketRef, roomId, username }) {
-  const { CODE_SNIPPETS } = useContext(storeContext);
+  const { isRemoteUpdate,CODE_SNIPPETS,language,value,setValue,setlanguage } = useContext(storeContext);
   const editorRef = useRef();
 
-  const [language, setlanguage] = useState('javascript');
-  const [value, setValue] = useState(CODE_SNIPPETS['javascript']);
-  const isRemoteUpdate = useRef(false);
+
 
   const onselect = (lang) => {
     setlanguage(lang);
     setValue(CODE_SNIPPETS[lang]);
-    socketRef.current?.emit('language-change', { roomId, language: lang });
+    socketRef.current?.emit('language-change', { roomId, language: lang, snippet: CODE_SNIPPETS[lang] });
   };
 
   const onMount = (editor) => {
@@ -66,33 +63,6 @@ function CodeEditor({ socketRef, roomId, username }) {
     };
   }, [socketRef.current]);
 
-  useEffect(() => {
-    if (!socketRef.current) return;
-
-    const socket = socketRef.current;
-
-
-    socket.on('sync-code', ({ code, language }) => {
-      console.log('Syncing code:', code, language);
-      isRemoteUpdate.current = true;
-      setValue(code);
-      setlanguage(language);
-      setTimeout(() => {
-        isRemoteUpdate.current = false;
-      }, 0);
-    });
-    return () => {
-      socket.off('sync-code', ({ code, language }) => {
-        console.log('Syncing code:', code, language);
-        isRemoteUpdate.current = true;
-        setValue(code);
-        setlanguage(language);
-        setTimeout(() => {
-          isRemoteUpdate.current = false;
-        }, 0);
-      });
-    };
-  }, [socketRef.current]);
 
   return (
     <div className="flex gap-1 w-full">

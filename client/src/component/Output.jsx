@@ -1,13 +1,12 @@
 import React, { useContext, useState } from 'react'
 import axios from 'axios'
 import { storeContext } from '../context/storeContext';
-import { toast } from 'react-toastify'
-import LoadingButtonsTransition from '../component/Loader.jsx'
+import { toast } from 'react-toastify';
 import Loader from '../component/Loader.jsx';
 
 function Output({ editorRef, language }) {
 
-    const { LANGUAGE_VERSIONS } = useContext(storeContext);
+    const { LANGUAGE_VERSIONS,option } = useContext(storeContext);
 
     const [output, setOutput] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -35,9 +34,7 @@ function Output({ editorRef, language }) {
             setOutput(response.data.run.output.split("\n"));
         } catch (error) {
             console.error(error);
-            toast.error(error.response.data.message || "Unable to run code", {
-                autoClose: 2000
-            })
+            toast.error(error.response.data.message || "Unable to run code",option)
         }
         finally {
             setLoading(false);

@@ -1,9 +1,15 @@
-import { useEffect, useState, createContext } from "react";
+import { useState, createContext, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 export const storeContext = createContext(null);
 
 const StoreContextProvider = (props) => {
+
+    const option = {
+        timeout: 1000,
+        position: 'top-center',
+        autoClose: 1000,
+    };
     const LANGUAGE_VERSIONS = {
         javascript: "18.15.0",
         typescript: "5.0.3",
@@ -36,6 +42,10 @@ const StoreContextProvider = (props) => {
     const [roomCode, setRoomCodeState] = useState(() => localStorage.getItem('roomCode') || '');
     const [username, setUsernameState] = useState(() => localStorage.getItem('username') || '');
 
+    const [language, setlanguage] = useState('javascript');
+    const [value, setValue] = useState(CODE_SNIPPETS['javascript']);
+    const isRemoteUpdate = useRef(false);
+
     const setRoomCode = (value) => {
         setRoomCodeState(value);
         localStorage.setItem('roomCode', value);
@@ -64,7 +74,13 @@ const StoreContextProvider = (props) => {
         ACTIONS,
         clearUserData,
         setRoomCodeState,
-        setUsernameState
+        setUsernameState,
+        value,
+        language, 
+        setValue,
+        setlanguage,
+        isRemoteUpdate,
+        option
     };
 
     return (

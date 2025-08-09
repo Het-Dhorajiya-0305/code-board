@@ -93,9 +93,9 @@ io.on('connection', (socket) => {
     socket.to(roomId).emit('user-typing', { username });
   });
 
-  socket.on('language-change', async ({ roomId, language }) => {
+  socket.on('language-change', async ({ roomId, language,snippet }) => {
     io.to(roomId).emit('language-changed', { language });
-    const updateRoom=await RoomModel.findByIdAndUpdate(roomId, { language: language }, { new: true });
+    const updateRoom=await RoomModel.findByIdAndUpdate(roomId, { language: language,code:snippet }, { new: true });
   });
   socket.on('disconnect', async () => {
     try {
@@ -144,6 +144,26 @@ io.on('connection', (socket) => {
 
 app.get('/', (req, res) => {
   res.send('Code Collaboration Backend Running 🚀');
+});
+
+app.get('/delete-all-rooms', async (req, res) => {
+  try {
+    await RoomModel.deleteMany({});
+    res.status(200).json({ message: 'All rooms deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting rooms:', err);
+    res.status(500).json({ message: 'Failed to delete rooms' });
+  }
+});
+
+app.get('/delete-all-users', async (req, res) => {
+  try {
+    await User.deleteMany({});
+    res.status(200).json({ message: 'All users deleted successfully' });    
+  } catch (err) {
+    console.error('Error deleting users:', err);
+    res.status(500).json({ message: 'Failed to delete users' });
+  }
 });
 
 server.listen(process.env.PORT || 3000, () => {
